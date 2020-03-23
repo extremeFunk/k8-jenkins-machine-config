@@ -1,0 +1,36 @@
+#!/bin/sh
+cd /home/ubuntu
+echo "########################################"
+echo "######  Installing Docker         ######"
+echo "########################################"
+sudo curl -sSL https://get.docker.com/ | sh
+sudo usermod -aG docker ${USER}
+sudo chmod 666 /var/run/docker.sock
+mkdir jenkins_home
+sudo chmod 777 jenkins_home
+sudo chmod 777 gcp_crd.json
+echo "########################################"
+echo "######  Copy Config Files         ######"
+echo "########################################"
+sudo chown jenkins:jenkins gcp_crd.json
+echo "########################################"
+echo "######  Building IMG              ######"
+echo "########################################"
+docker build -t echo/jenkins .
+echo "########################################"
+echo "######  Running Jenkins          #######"
+echo "########################################"
+  docker run -d -p 8080:8080 \
+  -p 5000:5000 \
+  -v ${PWD}/jenkins_home:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  echo/jenkins
+
+echo "########################################"
+echo "######    waiting for 10S'        ######"
+echo "########################################"
+sleep 10
+echo "########################################"
+echo "######  Docker process running:   ######"
+echo "########################################"
+docker ps
